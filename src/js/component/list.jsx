@@ -4,40 +4,72 @@ import { useState, useEffect } from "react";
 const List = () => {
     const [task, setTask] = useState("");
     const [newTask, setNewTask] = useState([]);
+    
+// Creación del usuario
+    fetch('https://playground.4geeks.com/todo/users/mvs.', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'aplication/json'
+        },
+        body: JSON.stringify({
+          username: 'mvs.'
+        })
+      
+      })
+      .then(response => {
+        if (!response.ok) 
+          {throw new Error (`HTTP error! status: ${response.status}`);
+          }
+        return response.json();
+      })
+      .then(data => { console.log('User created:', data);
+      })
+      .catch(error => console.error(error));
 
-    const Submit = (e) => { 
+// Envío de item del TodoList
+    const Submit = async (e) => { 
       if (e.key === "Enter") {
         if (task.trim()) {
           setNewTask([...newTask, task]);
           setTask('');
-      }
-      }
-    };
 
-    useEffect(() => {
-      initializaList()
-    }, [])
-
-    async function initializaList() {
-      let resp = await fetch("https://playground.4geeks.com/todo/users/marianvsf")
-      if (resp.status == 404) {
-        let respCreate = await fetch("https://playground.4geeks.com/todo/users/marianvsf",{        
-          method: "POST", 
-          headers: {
-            "Content-Type":"aplication/json",
+          try {
+            const syncTodoList = await fetch('https://playground.4geeks.com/todo/todos/mvs.', {
+              method: 'POST',
+              body: JSON.stringify({ task }),
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+            if (!syncTodoList.ok) {throw new Error (`Error to save todo`);
           }
-      });
+          console.log('todo save');
+          } catch (error) {
+            console.error('Error:', error)
+          }
       }
-    
-      if (resp.ok) {
-        console.log("Usuario creado")
-        resp = await fetch("https://playground.4geeks.com/todo/users/marianvsf")
-      }
-
     }
+    };
+    
+ // Sincronización del TodoList con la API de backend   
+ /* const syncTodoList = async () =>{
+      const responseList = await fetch('https://playground.4geeks.com/todo/todos/mvs', { 
+        method: 'POST',
+        body: JSON.stringify(Submit),
+        headers: {
+          'Content-Type': 'application/json'
+        }
 
-    
-    
+    });
+    if (responseList.ok) {
+      const dataList = await responseList.json();
+      return dataList;
+    } else {
+      console.log('error: ', responseList.status, responseList.statusText);
+      return {error: {status: responseList.status, statusText: response.statusText}};      
+    };
+    };*/
+  
 
     const deleteItem = (index) => {
       setNewTask(newTask.filter((_, i) => i !== index));
@@ -61,7 +93,31 @@ const List = () => {
             </ul>
           </div>
         );
-  };
+      };
+      
+      export default List;
 
+      // Ejemplo de creación del usuario hecho en clase 
 
-export default List;
+            /* useEffect(() => {
+              initializaList()
+            }, [])
+        
+           async function initializaList() {
+              let resp = await fetch("https://playground.4geeks.com/todo/users/marianvsf")
+              if (resp.status == 404) {
+                let respCreate = await fetch("https://playground.4geeks.com/todo/users/marianvsf",{        
+                  method: "POST", 
+                  headers: {
+                    "Content-Type":"aplication/json",
+                  }
+              });
+              }
+            
+              if (resp.ok) {
+                console.log("Usuario creado")
+                resp = await fetch("https://playground.4geeks.com/todo/users/marianvsf")
+              }
+        
+            }
+              */
