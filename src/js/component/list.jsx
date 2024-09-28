@@ -26,7 +26,7 @@ const List = () => {
       })
       .catch(error => console.error(error));
 
-// Envío de item del TodoList
+// Envío al API de item del TodoList
     const Submit = async (e) => { 
       if (e.key === "Enter") {
         if (task.trim()) {
@@ -36,7 +36,7 @@ const List = () => {
           try {
             const syncTodoList = await fetch('https://playground.4geeks.com/todo/todos/mvs.', {
               method: 'POST',
-              body: JSON.stringify({ task }),
+              body: JSON.stringify({ "label": task }),
               headers: {
                 'Content-Type': 'application/json'
               }
