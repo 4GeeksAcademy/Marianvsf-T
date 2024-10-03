@@ -28,9 +28,15 @@ input {
 }
 .delete-button {
     color: rgba(158, 105, 105, 0.548);
+    display: none;
+}
+li:hover .delete-button {
+    display: block;
+
 }
 
-/*display: none;
+
+/*
 .delete-button.hovered {
     display: inline-block; 
 }*/

@@ -6,44 +6,52 @@ const List = () => {
     const [newTask, setNewTask] = useState([]);
     
 // Creación del usuario
-    fetch('https://playground.4geeks.com/todo/users/mvs.', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'aplication/json'
-        },
-        body: JSON.stringify({
-          username: 'mvs.'
-        })
-      
-      })
-      .then(response => {
-        if (!response.ok) 
-          {throw new Error (`HTTP error! status: ${response.status}`);
-          }
-        return response.json();
-      })
-      .then(data => { console.log('User created:', data);
-      })
-      .catch(error => console.error(error));
 
+    useEffect(() => {
+       initializaList()
+    }, [])
+        
+    async function initializaList() {
+        let resp = await fetch("https://playground.4geeks.com/todo/users/mvs.")
+            if (resp.status === 404) {
+                await fetch("https://playground.4geeks.com/todo/users/mvs.",{        
+                method: "POST", 
+                headers: {
+                 "Content-Type":"aplication/json",
+                }
+                });
+                return initializaList();
+            }
+            if (resp.ok) {
+              let data = await resp.json();
+              setNewTask(data.todos);
+              console.log("Usuario creado")
+            }
+            }
+             
 // Envío al API de item del TodoList
-    const Submit = async (e) => { 
+    const SubmitList = async (e) => { 
+     
       if (e.key === "Enter") {
         if (task.trim()) {
-          setNewTask([...newTask, task]);
-          setTask('');
+          
 
           try {
-            const syncTodoList = await fetch('https://playground.4geeks.com/todo/todos/mvs.', {
+            const resp = await fetch('https://playground.4geeks.com/todo/todos/mvs.', {
               method: 'POST',
               body: JSON.stringify({ "label": task }),
               headers: {
                 'Content-Type': 'application/json'
               }
             });
-            if (!syncTodoList.ok) {throw new Error (`Error to save todo`);
-          }
-          console.log('todo save');
+            if (resp.ok) {
+              const data = await resp.json();
+              console.log(data)
+              setNewTask([...newTask, data]);
+              setTask("");
+          } else {
+              console.error("Error al agregar el item:", resp.statusText);
+            } 
           } catch (error) {
             console.error('Error:', error)
           }
@@ -55,7 +63,7 @@ const List = () => {
  /* const syncTodoList = async () =>{
       const responseList = await fetch('https://playground.4geeks.com/todo/todos/mvs', { 
         method: 'POST',
-        body: JSON.stringify(Submit),
+        body: JSON.stringify(SubmitList),
         headers: {
           'Content-Type': 'application/json'
         }
@@ -69,55 +77,51 @@ const List = () => {
       return {error: {status: responseList.status, statusText: response.statusText}};      
     };
     };*/
-  
 
-    const deleteItem = (index) => {
-      setNewTask(newTask.filter((_, i) => i !== index));
 
-    };
+
+    const deleteItem = async (id) => {
+     let resp = await fetch(`https://playground.4geeks.com/todo/todos/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',}
+    })
+        if (resp.ok) {
+        setNewTask(newTask.filter(item => item.id !== id));
+        console.log("tarea eliminada", id);
+        }
+        }
+
+      const deleteAll = async () => {
+        let resp = await fetch (`https://playground.4geeks.com/todo/users/mvs.`,{
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+        )
+        if (resp.ok) {
+          setNewTask([])
+      }}
 
       return (
           <div style={{width: "500px", margin:"auto"}}>
             <ul className="list-group ">
              <input type="text" value={task} 
-              onKeyDown={Submit} 
+              onKeyDown={SubmitList} 
               onChange={(e) => setTask(e.target.value)} placeholder={task== "" ? "What needs to be done?" : task } />
               {newTask.map((item, index) => (  
-            <li className="list list-group-item list-group-item-light text-start" key={index} 
-            style={{ display: 'flex', justifyContent: 'space-between' }}>{item}
+            <li className="list list-group-item list-group-item-light text-start" key={item.id} 
+            style={{ display: 'flex', justifyContent: 'space-between' }}>{item.label}
             <button className="btn btn-sm delete-button"
-            onClick={() => deleteItem(index)}>x</button></li>
+            onClick={() => deleteItem(item.id)}>x</button></li>
               ))}
             <li className="count list-group-item text-start"
             style={{color: "gray"}}>{newTask.length} items left</li>
             </ul>
+            <button type="button" className="btn btn-danger m-5" onClick={deleteAll}>Delete all the todos</button>
           </div>
         );
       };
       
       export default List;
-
-      // Ejemplo de creación del usuario hecho en clase 
-
-            /* useEffect(() => {
-              initializaList()
-            }, [])
-        
-           async function initializaList() {
-              let resp = await fetch("https://playground.4geeks.com/todo/users/marianvsf")
-              if (resp.status == 404) {
-                let respCreate = await fetch("https://playground.4geeks.com/todo/users/marianvsf",{        
-                  method: "POST", 
-                  headers: {
-                    "Content-Type":"aplication/json",
-                  }
-              });
-              }
-            
-              if (resp.ok) {
-                console.log("Usuario creado")
-                resp = await fetch("https://playground.4geeks.com/todo/users/marianvsf")
-              }
-        
-            }
-              */
